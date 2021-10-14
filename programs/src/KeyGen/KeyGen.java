@@ -68,7 +68,7 @@ public class KeyGen {
 			System.out.println("Enter a 16-character string: ");
 			input = sc.nextLine();
 		}
-		File symmetricKey = new File("symmetric.key");
+		FileOutputStream symmetricKey = new FileOutputStream("symmetric.key", false);
 		PrintWriter pw = new PrintWriter(symmetricKey);
 		pw.println(input);
 		pw.close();
@@ -91,35 +91,6 @@ public class KeyGen {
 			throw new IOException("Unexpected error", e);
 		} finally {
 			oout.close();
-		}
-	}
-	
-	
-	//read key parameters from a file and generate the public key
-	public static PublicKey readPubKeyFromFile(String keyFileName)
-			throws IOException {
-		
-		InputStream in =
-				KeyGen.class.getResourceAsStream(keyFileName);
-		ObjectInputStream oin =
-				new ObjectInputStream(new BufferedInputStream(in));
-		
-		try {
-			BigInteger m = (BigInteger) oin.readObject();
-			BigInteger e = (BigInteger) oin.readObject();
-			
-			System.out.println("Read from " + keyFileName + ": modulus = " +
-			                   m.toString() + ", exponent = " + e.toString() + "\n");
-			
-			RSAPublicKeySpec keySpec = new RSAPublicKeySpec(m, e);
-			KeyFactory factory = KeyFactory.getInstance("RSA");
-			PublicKey key = factory.generatePublic(keySpec);
-			
-			return key;
-		} catch (Exception e) {
-			throw new RuntimeException("Spurious serialisation error", e);
-		} finally {
-			oin.close();
 		}
 	}
 	
