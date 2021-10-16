@@ -110,7 +110,7 @@ public class Sender {
 		return hash;
 	}
 	
-	public static byte[] encryptAES(byte[] hash, String f) throws Exception {
+	public static void encryptAES(byte[] hash, String f) throws Exception {
 		File file = new File(f);
 		Scanner sk = new Scanner(new FileReader("symmetric.key"));
 		String symmetricKey = sk.nextLine();
@@ -142,7 +142,7 @@ public class Sender {
 		}
 		System.out.println();
 		
-		return encrypted;
+		//return encrypted;
 	}
 	
 	public static void encryptRSA(String f) throws Exception {
@@ -162,18 +162,25 @@ public class Sender {
 		
 		int piece;
 		byte[] buffer;
+		byte[] leftOverBuffer;
 		byte[] encrypted;
 		do {
 			buffer = new byte[BUFFER_SIZE];
 			piece = dis.read(buffer, 0, BUFFER_SIZE);
-			if (piece < 117 && piece > 0) {
+			if (piece == BUFFER_SIZE) {
 				encrypted = cipher.doFinal(buffer, 0, piece);
+				System.out.println("encrypted size: " + encrypted.length);
 				bos.write(encrypted);
-				break;
 			}
-			System.out.println("piece size: " + piece + " bytes");
+			else if (piece < BUFFER_SIZE && piece > 0) {
+				System.out.println("starting if piece size: " + piece);
+				leftOverBuffer = new byte[piece];
+				piece = dis.read(leftOverBuffer, 0, leftOverBuffer.length);
+				encrypted = cipher.doFinal(leftOverBuffer);
+				bos.write(encrypted);
+				System.out.println("left over piece size: " + piece);
+			}
 		} while (piece == BUFFER_SIZE);
-		
 		System.out.println("final piece size: " + piece + " bytes");
 		
 		fis.close();
