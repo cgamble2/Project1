@@ -124,12 +124,12 @@ public class Sender {
 		// append message "piece by piece"?
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream bis = new BufferedInputStream(fis);
-		DataInputStream dis = new DataInputStream(bis);
-		while (dis.available() > 0)
-			bos.write(dis.readNBytes(16));
+		//DataInputStream dis = new DataInputStream(bis);
+		while (bis.available() > 0)
+			bos.write(bis.readNBytes(16));
 		fis.close();
 		bis.close();
-		dis.close();
+		//dis.close();
 		bos.close();
 		
 		System.out.println("encrypted digit digest (hash value):");
@@ -153,7 +153,7 @@ public class Sender {
 		
 		FileInputStream fis = new FileInputStream("message.add-msg");
 		BufferedInputStream bis = new BufferedInputStream(fis);
-		DataInputStream dis = new DataInputStream(bis);
+		//DataInputStream dis = new DataInputStream(bis);
 		
 		FileOutputStream fos = new FileOutputStream("message.rsacipher");
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -164,7 +164,7 @@ public class Sender {
 		byte[] encrypted;
 		do {
 			buffer = new byte[BUFFER_SIZE];
-			piece = dis.read(buffer, 0, BUFFER_SIZE);
+			piece = bis.read(buffer, 0, BUFFER_SIZE);
 			if (piece == BUFFER_SIZE) {
 				encrypted = cipher.doFinal(buffer, 0, piece);
 				System.out.println("encrypted size: " + encrypted.length);
@@ -173,7 +173,7 @@ public class Sender {
 			else if (piece < BUFFER_SIZE && piece > 0) {
 				System.out.println("starting if piece size: " + piece);
 				leftOverBuffer = new byte[piece];
-				piece = dis.read(leftOverBuffer, 0, leftOverBuffer.length);
+				piece = bis.read(leftOverBuffer, 0, leftOverBuffer.length);
 				encrypted = cipher.doFinal(leftOverBuffer);
 				bos.write(encrypted);
 				System.out.println("left over piece size: " + piece);
@@ -183,7 +183,7 @@ public class Sender {
 		
 		fis.close();
 		bis.close();
-		dis.close();
+		//dis.close();
 		bos.close();
 		
 	}
