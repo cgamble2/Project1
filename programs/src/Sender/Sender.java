@@ -145,17 +145,15 @@ public class Sender {
 		//return encrypted;
 	}
 	
-	public static void encryptRSA(String f) throws Exception {
-		File file = new File(f);
+	public static void encryptRSA() throws Exception {
 		final int BUFFER_SIZE = 117;
 		Key key = readPubKeyFromFile("YPublic.key");
 		Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, key, new SecureRandom());
 		
-		FileInputStream fis = new FileInputStream(file);
+		FileInputStream fis = new FileInputStream("message.add-msg");
 		BufferedInputStream bis = new BufferedInputStream(fis);
 		DataInputStream dis = new DataInputStream(bis);
-		
 		
 		FileOutputStream fos = new FileOutputStream("message.rsacipher");
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
@@ -196,7 +194,7 @@ public class Sender {
 		writeToFile(msgFile);
 		byte[] md = md(msgFile);
 		encryptAES(md, msgFile);
-		encryptRSA(msgFile);
+		encryptRSA();
 		
 	}
 }

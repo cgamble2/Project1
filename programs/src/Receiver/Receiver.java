@@ -53,13 +53,11 @@ public class Receiver {
 		File file = new File(encryptedFile);
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream bis = new BufferedInputStream(fis);
-		DataInputStream dis = new DataInputStream(bis);
 		
 		System.out.println("message.rsacipher size: " + file.length());
 		
 		int piece;
 		byte[] buffer;
-		byte[] leftOverBuffer;
 		byte[] decrypted;
 		final int PIECE_SIZE = 128;
 		
@@ -72,29 +70,22 @@ public class Receiver {
 		System.out.println("Beginning loop for RSA Decryption");
 		do {
 			buffer = new byte[PIECE_SIZE];
-			piece = dis.read(buffer, 0, PIECE_SIZE);
-
-			if (piece == PIECE_SIZE) {
-				System.out.println("Entering if statement with piece size: " + piece);
+			piece = bis.read(buffer, 0, PIECE_SIZE);
+			
+			if (piece > 0) {
+				System.out.println("buffer content: " + Arrays.toString(buffer));
 				decrypted = cipher.doFinal(buffer, 0, PIECE_SIZE);
 				System.out.println("Decrypted:" + Arrays.toString(decrypted));
-				System.out.println("Size of decrypted " + decrypted.length);
-				bos.write(decrypted);
-			}
-			else if (piece < PIECE_SIZE && piece > 0) {
-				leftOverBuffer = new byte[piece];
-				piece = dis.read(leftOverBuffer, 0, piece);
-				decrypted = cipher.doFinal(leftOverBuffer);
+				System.out.println("Size of decrypted: " + decrypted.length);
 				bos.write(decrypted);
 			}
 			System.out.println("Piece size: " + piece);
 		} while (piece == PIECE_SIZE);
-		//decrypted = cipher.doFinal(buffer);
-		//bos.write(decrypted);
+
 		
 		fis.close();
 		bis.close();
-		dis.close();
+		bis.close();
 		bos.close();
 		
 		System.out.println("Finished with loop for RSA Decryption");
@@ -104,7 +95,6 @@ public class Receiver {
 		File messageadd = new File(decodedString);
 		fis = new FileInputStream(messageadd);
 		bis = new BufferedInputStream(fis);
-		dis = new DataInputStream(bis);
 		
 		// get digest from first 32 bytes
 		
@@ -114,9 +104,9 @@ public class Receiver {
 		
 		byte[] message = new byte[messageLength];
 		
-		dis.read(adigitalDigest, 0, 32);
+		bis.read(adigitalDigest, 0, 32);
 		// read remaining bytes of message M into the with a name of fileName from user
-		dis.read(message, 0, messageLength);
+		bis.read(message, 0, messageLength);
 		
 		
 		// save message into file with name filename
