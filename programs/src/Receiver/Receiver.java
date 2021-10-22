@@ -73,13 +73,10 @@ public class Receiver {
 			piece = bis.read(buffer, 0, PIECE_SIZE);
 			
 			if (piece > 0) {
-				System.out.println("buffer content: " + Arrays.toString(buffer));
-				decrypted = cipher.doFinal(buffer, 0, PIECE_SIZE);
-				System.out.println("Decrypted:" + Arrays.toString(decrypted));
-				System.out.println("Size of decrypted: " + decrypted.length);
+				decrypted = cipher.doFinal(buffer, 0, piece);
 				bos.write(decrypted);
 			}
-			System.out.println("Piece size: " + piece);
+			
 		} while (piece == PIECE_SIZE);
 
 		
@@ -116,15 +113,13 @@ public class Receiver {
 		bos = new BufferedOutputStream(fos);
 		bos.write(message);
 		
-		
-		
 		// do AES decryption of digital signature to determine if its genuine use symmetric key pubkeyXY
 		
 		Cipher cipherAES = Cipher.getInstance("AES/CBC/NoPadding", "SunJCE");
 		SecretKeySpec key = new SecretKeySpec(symmetricKey.getBytes(StandardCharsets.UTF_8), "AES");
-		cipherAES.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(new byte[16]));
+		byte[] iv = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+		cipherAES.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(iv));
 		byte[] unencryptedDD = cipherAES.doFinal(adigitalDigest);
-		
 		
 		// save the digital digest into a file named message.dd and print it in hexadecimal
 		
@@ -185,7 +180,7 @@ public class Receiver {
 		if (Arrays.equals(hash, unencryptedDD)) {
 			System.out.println("Successful");
 		} else {
-			System.out.println("Didnt match, message was altered");
+			System.out.println("Didn't match, message was altered");
 		}
 		
 		

@@ -1,14 +1,11 @@
-//package Sender;
-
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
 public class Sender {
@@ -45,33 +42,6 @@ public class Sender {
 		Scanner sc = new Scanner(System.in);
 		System.out.print("Input the name of the message file: ");
 		return sc.nextLine();
-	}
-	
-	public static void createFile(String fileName) {
-		try {
-			File file = new File(fileName);
-			if (file.createNewFile()) {
-				System.out.println("File created: " + file.getName());
-			} else {
-				System.out.println("File already exists.");
-			}
-		} catch (IOException e) {
-			System.out.println("An error occurred.");
-			e.printStackTrace();
-		}
-	}
-	
-	public static void writeToFile(String file) {
-		try {
-			Scanner sc = new Scanner(System.in);
-			System.out.print("Super secret message (M): ");
-			PrintWriter pw = new PrintWriter(file);
-			pw.println(sc.nextLine());
-			pw.close();
-			
-		} catch (FileNotFoundException ex) {
-			System.out.println(ex.getMessage());
-		}
 	}
 	
 	public static byte[] md(String f) throws Exception {
@@ -116,20 +86,19 @@ public class Sender {
 		String symmetricKey = sk.nextLine();
 		Cipher cipher = Cipher.getInstance("AES/CBC/NoPadding", "SunJCE");
 		SecretKeySpec key = new SecretKeySpec(symmetricKey.getBytes(StandardCharsets.UTF_8), "AES");
-		cipher.init(Cipher.ENCRYPT_MODE, key);
+		byte[] iv = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+		cipher.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(iv));
 		byte[] encrypted = cipher.doFinal(hash);
 		
 		BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream("message.add-msg"));
 		bos.write(encrypted);
-		// append message "piece by piece"?
+
 		FileInputStream fis = new FileInputStream(file);
 		BufferedInputStream bis = new BufferedInputStream(fis);
-		//DataInputStream dis = new DataInputStream(bis);
 		while (bis.available() > 0)
 			bos.write(bis.readNBytes(16));
 		fis.close();
 		bis.close();
-		//dis.close();
 		bos.close();
 		
 		System.out.println("encrypted digit digest (hash value):");
@@ -141,8 +110,6 @@ public class Sender {
 			}
 		}
 		System.out.println();
-		
-		//return encrypted;
 	}
 	
 	public static void encryptRSA() throws Exception {
@@ -153,45 +120,30 @@ public class Sender {
 		
 		FileInputStream fis = new FileInputStream("message.add-msg");
 		BufferedInputStream bis = new BufferedInputStream(fis);
-		//DataInputStream dis = new DataInputStream(bis);
 		
 		FileOutputStream fos = new FileOutputStream("message.rsacipher");
 		BufferedOutputStream bos = new BufferedOutputStream(fos);
 		
 		int piece;
 		byte[] buffer;
-		byte[] leftOverBuffer;
 		byte[] encrypted;
 		do {
 			buffer = new byte[BUFFER_SIZE];
 			piece = bis.read(buffer, 0, BUFFER_SIZE);
-			if (piece == BUFFER_SIZE) {
+			if (piece > 0) {
 				encrypted = cipher.doFinal(buffer, 0, piece);
-				System.out.println("encrypted size: " + encrypted.length);
 				bos.write(encrypted);
-			}
-			else if (piece < BUFFER_SIZE && piece > 0) {
-				System.out.println("starting if piece size: " + piece);
-				leftOverBuffer = new byte[piece];
-				piece = bis.read(leftOverBuffer, 0, leftOverBuffer.length);
-				encrypted = cipher.doFinal(leftOverBuffer);
-				bos.write(encrypted);
-				System.out.println("left over piece size: " + piece);
 			}
 		} while (piece == BUFFER_SIZE);
-		System.out.println("final piece size: " + piece + " bytes");
 		
 		fis.close();
 		bis.close();
-		//dis.close();
 		bos.close();
 		
 	}
 	
 	public static void main(String[] args) throws Exception {
 		String msgFile = getFileNameFromUser();
-		createFile(msgFile);
-		writeToFile(msgFile);
 		byte[] md = md(msgFile);
 		encryptAES(md, msgFile);
 		encryptRSA();

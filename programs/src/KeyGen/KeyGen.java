@@ -1,5 +1,3 @@
-package KeyGen;
-
 import java.io.*;
 import java.util.Scanner;
 import java.security.Key;
@@ -70,7 +68,7 @@ public class KeyGen {
 		}
 		FileOutputStream symmetricKey = new FileOutputStream("symmetric.key", false);
 		PrintWriter pw = new PrintWriter(symmetricKey);
-		pw.println(input);
+		pw.print(input);
 		pw.close();
 	
 	}
